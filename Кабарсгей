@@ -1,0 +1,141 @@
+-- Папка для объектов
+local folder = Instance.new("Folder")
+folder.Name = "MyParts"
+folder.Parent = workspace
+
+-- Флаг: спавн включён или нет
+local spawning = true
+
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "MyGui"
+gui.ResetOnSpawn = false
+gui.Parent = game.Players.LocalPlayer.PlayerGui
+
+-- Кнопка "УДАЛИТЬ ВСЁ"
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 150, 0, 50)
+button.Position = UDim2.new(0, 20, 0, 20)
+button.Text = "УДАЛИТЬ ВСЁ"
+button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.TextScaled = true
+button.Parent = gui
+
+button.MouseButton1Click:Connect(function()
+    for _, obj in ipairs(folder:GetChildren()) do
+        obj:Destroy()
+    end
+end)
+
+-- Галочка "Спавн"
+local check = Instance.new("TextButton")
+check.Size = UDim2.new(0, 150, 0, 50)
+check.Position = UDim2.new(0, 20, 0, 80)
+check.Text = "✔ Спавн ВКЛ"
+check.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+check.TextColor3 = Color3.fromRGB(255, 255, 255)
+check.TextScaled = true
+check.Parent = gui
+
+check.MouseButton1Click:Connect(function()
+    spawning = not spawning
+    if spawning then
+        check.Text = "✔ Спавн ВКЛ"
+        check.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    else
+        check.Text = "✘ Спавн ВЫКЛ"
+        check.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    end
+end)
+
+-- Создание фигуры
+local function spawnFigure(basePos)
+    local model = Instance.new("Model")
+    model.Name = "Figure"
+
+    local r = math.random(0,255)
+    local g = math.random(0,255)
+    local b = math.random(0,255)
+    local color = Color3.fromRGB(r, g, b)
+
+    -- Стержень (поворот +90 по Z)
+    local shaft = Instance.new("Part")
+    shaft.Name = "Shaft"
+    shaft.Shape = Enum.PartType.Cylinder
+    shaft.Size = Vector3.new(6, 1.5, 1.5)
+    shaft.Color = color
+    shaft.Material = Enum.Material.SmoothPlastic
+    shaft.Anchored = false
+    shaft.CanCollide = true
+    shaft.CFrame = CFrame.new(basePos) * CFrame.Angles(0, 0, math.rad(90))
+    shaft.Parent = model
+
+    -- Верхний шар
+    local top = Instance.new("Part")
+    top.Name = "Top"
+    top.Shape = Enum.PartType.Ball
+    top.Size = Vector3.new(2, 2, 2)
+    top.Color = color
+    top.Material = Enum.Material.SmoothPlastic
+    top.Anchored = false
+    top.CanCollide = true
+    top.CFrame = CFrame.new(basePos + Vector3.new(0, 3, 0))
+    top.Parent = model
+
+    -- Нижний шар 1
+    local bot1 = Instance.new("Part")
+    bot1.Name = "Bot1"
+    bot1.Shape = Enum.PartType.Ball
+    bot1.Size = Vector3.new(2.5, 2.5, 2.5)
+    bot1.Color = color
+    bot1.Material = Enum.Material.SmoothPlastic
+    bot1.Anchored = false
+    bot1.CanCollide = true
+    bot1.CFrame = CFrame.new(basePos + Vector3.new(0, -3, 1.5))
+    bot1.Parent = model
+
+    -- Нижний шар 2
+    local bot2 = Instance.new("Part")
+    bot2.Name = "Bot2"
+    bot2.Shape = Enum.PartType.Ball
+    bot2.Size = Vector3.new(2.5, 2.5, 2.5)
+    bot2.Color = color
+    bot2.Material = Enum.Material.SmoothPlastic
+    bot2.Anchored = false
+    bot2.CanCollide = true
+    bot2.CFrame = CFrame.new(basePos + Vector3.new(0, -3, -1.5))
+    bot2.Parent = model
+
+    -- Сварка
+    local w1 = Instance.new("WeldConstraint")
+    w1.Part0 = shaft
+    w1.Part1 = top
+    w1.Parent = shaft
+
+    local w2 = Instance.new("WeldConstraint")
+    w2.Part0 = shaft
+    w2.Part1 = bot1
+    w2.Parent = shaft
+
+    local w3 = Instance.new("WeldConstraint")
+    w3.Part0 = shaft
+    w3.Part1 = bot2
+    w3.Parent = shaft
+
+    model.PrimaryPart = shaft
+    model.Parent = folder
+end
+
+-- Основной цикл
+while true do
+    if spawning then
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local pos = char.HumanoidRootPart.Position
+            local spawnPos = pos + Vector3.new(math.random(-15,15), math.random(5,15), math.random(-15,15))
+            spawnFigure(spawnPos)
+        end
+    end
+    task.wait(0.1)
+end
